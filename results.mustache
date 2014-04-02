@@ -13,9 +13,14 @@
 
 <ol>
     {{#hits}}
-    <li>
+    <li style="clear: both">
         <h3><a href="{{url}}">{{title}}</a></h3>
-        <p>{{synopsis}}</p>
+        {{#image}}
+            <img src="{{.}}" height="100" style="float: left; padding-right: 1em; margin-bottom: 2em"/>
+        {{/image}}
+        {{#synopsis}}
+        <p>{{.}}</p>
+        {{/synopsis}}
     </li>
     {{/hits}}
 </ol>
