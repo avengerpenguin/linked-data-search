@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<body>
+<form action="/search" method="get">
+    <input type="text" name="q"/>
+    <input type="submit"/>
+</form>
+
+{{#hits}}
+<h2>Results</h2>
+
+<p>Total found: {{total}}</p>
+
+<ol>
+    {{#hits}}
+    <li>
+        <h3><a href="{{url}}">{{title}}</a></h3>
+        <p>{{synopsis}}</p>
+    </li>
+    {{/hits}}
+</ol>
+{{/hits}}
+
+</body>
+</html>
