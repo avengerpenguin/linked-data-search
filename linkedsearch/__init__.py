@@ -31,7 +31,7 @@ def index_graph(uri, graph):
     print graph.serialize(format='turtle')
     print
     print '=' * 80
-    printk
+    print
 
     json_ld = convert_graph_to_json(graph)
     body = {'jsonld': json_ld}
