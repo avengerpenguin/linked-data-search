@@ -6,10 +6,17 @@ from rdflib import Graph, URIRef
 
 
 QUERY = """
-SELECT ?title
+SELECT ?title ?synopsis ?url ?image
 WHERE {
+    ?entity <http://schema.org/headline> ?title .
     OPTIONAL {
-        ?entity <http://ogp.me/ns#title>|<http://schema.org/headline> ?title .
+        ?entity <http://schema.org/description> ?synopsis .
+    }
+    OPTIONAL {
+        ?entity <http://schema.org/url> ?url .
+    }
+    OPTIONAL {
+        ?entity <http://schema.org/thumbnailUrl> ?image .
     }
 }
 """
@@ -21,37 +28,38 @@ def index():
     return {}
 
 
+def extract_properties(hit):
+    graph = Graph()
+    graph.parse(data=json.dumps(hit['_source']['jsonld']), format='json-ld')
+    print graph.serialize(format='turtle')
+    bindings = graph.query(QUERY, initBindings={'entity': URIRef(hit['_id'])}).bindings
+
+    if bindings:
+        return bindings[0]
+    else:
+        return {}
+
+
 @route('/search')
 @view('results')
 def search():
-
     query = request.query.q or '*'
     response = Elasticsearch().search(index='search', q=query)
-
-
-    for hit in response['hits']['hits']:
-        print Graph().parse(data=json.dumps(hit['_source']['jsonld']), format='json-ld').serialize(format="turtle")
-
-    for hit in response['hits']['hits']:
-        for row in Graph().parse(
-                    data=json.dumps(hit['_source']['jsonld']),
-                    format='json-ld'
-                ).query(QUERY, initBindings={'entity': URIRef(hit['_id'])}):
-            print row
 
     results = {
         'hits': {
             'total': response['hits']['total'],
             'hits': [
-                Graph().parse(
-                    data=json.dumps(hit['_source']['jsonld']),
-                    format='json-ld'
-                ).query(QUERY, initBindings={'entity': URIRef(hit['_id'])}).bindings[0]
+                {
+                    property.lstrip('?'): value
+
+                    for property, value in extract_properties(hit).iteritems()
+                }
                 for hit in response['hits']['hits']
             ]
         }
     }
-    print results
+
     return results
 
 

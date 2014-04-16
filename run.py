@@ -1,5 +1,5 @@
-from indexer import index_news, index_sport, index_programmes
+from linkedsearch import index_news, index_sport, index_programmes
 
-#index_news()
-#index_sport()
+index_news()
+index_sport()
 index_programmes()
