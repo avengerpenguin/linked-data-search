@@ -2,6 +2,7 @@ from StringIO import StringIO
 from RDFClosure import DeductiveClosure, OWLRL_Semantics
 from elasticsearch import Elasticsearch
 import feedparser
+import rdflib
 from rdflib import Graph, URIRef, Literal
 import requests
 from lxml.cssselect import CSSSelector
@@ -11,8 +12,136 @@ from celery import Celery
 from FuXi.Rete.RuleStore import SetupRuleStore
 from FuXi.Rete.Util import generateTokenSet
 from FuXi.Horn.HornRules import HornFromN3
+from datetime import timedelta
+import lxml.etree as ET
+
+
+CELERYBEAT_SCHEDULE = {
+    'poll-every-five-minutes': {
+        'task': 'poll',
+        'schedule': timedelta(minutes=5)
+    },
+}
 
 app = Celery('linkedsearch', broker='amqp://guest@localhost//')
+
+def combine_pipeline(source, pipeline):
+    """Combine source and pipeline and return a generator."""
+    generator = source
+    for step in pipeline:
+        generator = step(generator)
+    return generator
+
+
+def run_pipeline(iter):
+    for _ in iter:
+        pass
+
+
+def fetch_feeds(feeds):
+    for feed in feeds:
+        yield feedparser.parse(feed)
+
+
+def break_feeds_into_entries(feeds):
+    for feed in feeds:
+        for entry in feed.entries:
+            yield entry
+
+
+def convert_rss_entries_to_graphs(entries):
+    for entry in entries:
+        graph = rdflib.Graph()
+        graph.bind('rss', 'http://purl.org/rss/1.0/')
+        RSS_NAMESPACE = rdflib.Namespace('http://purl.org/rss/1.0/')
+
+        for prop in entry.keys():
+            subject = rdflib.URIRef(entry.id)
+            predicate = RSS_NAMESPACE[prop]
+            object = rdflib.Literal(entry[prop])
+
+            statement = (subject, predicate, object)
+            graph.add(statement)
+
+        yield graph
+
+
+def enrich_graphs_with_metadata_in_page(graphs):
+    for graph in graphs:
+        for subject in graph.subjects():
+            graph.parse(str(subject))
+        yield graph
+
+
+def apply_inference_rules(graph, ruleset):
+    rule_store, rule_graph, network = SetupRuleStore(makeNetwork=True)
+    closure_delta = Graph()
+    network.inferredFacts = closure_delta
+    for rule in HornFromN3(ruleset):
+        network.buildNetworkFromClause(rule)
+
+    network.feedFactsToAdd(generateTokenSet(graph))
+
+    return graph + closure_delta
+
+
+def infer_required_fields(graphs):
+    for graph in graphs:
+        yield apply_inference_rules(graph, 'rules.n3')
+
+
+def serialise_graphs(format):
+    def graphs_serialiser(graphs):
+        for graph in graphs:
+            yield graph.serialize(format=format)
+    return graphs_serialiser
+
+
+def parse_json_strings(strings):
+    for string in strings:
+        yield json.loads(string)
+
+
+def index_jsonld_in_elasticsearch(elastic_search):
+    def indexer(jsonld_strings):
+        for jsonld_string in jsonld_strings:
+            body = {'jsonld': json.loads(jsonld_string)}
+            elastic_search.index(index='search', body=body, doc_type='item')
+    return indexer
+
+
+def print_items(items):
+    for item in items:
+        print item
+
+
+if __name__ == '__main__':
+    feeds = ['http://feeds.bbci.co.uk/news/rss.xml', 'http://feeds.bbci.co.uk/sport/0/rss.xml?edition=uk']
+    rss_pipeline_steps = [
+        fetch_feeds,
+        break_feeds_into_entries,
+        convert_rss_entries_to_graphs,
+        enrich_graphs_with_metadata_in_page,
+        infer_required_fields,
+        serialise_graphs('json-ld'),
+        index_jsonld_in_elasticsearch(Elasticsearch())
+    ]
+    rss_pipeline = combine_pipeline(feeds, rss_pipeline_steps)
+    run_pipeline(rss_pipeline)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def create_graph_from_rss_entry(uri, entry):
@@ -110,3 +239,5 @@ def index_programmes():
 
 
         expand_and_index.delay(programmes_url, graph)
+
+

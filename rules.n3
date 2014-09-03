@@ -1,0 +1,21 @@
+@prefix schema: <http://schema.org/> .
+@prefix rnews: <http://iptc.org/std/rNews/2011-10-07#> .
+@prefix og: <http://ogp.me/ns#> .
+@prefix og2: <http://opengraphprotocol.org/schema/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix po: <http://purl.org/ontology/po/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+
+
+{ ?x rnews:headline      ?y } => { ?x schema:headline     ?y } .
+{ ?x og:title            ?y } => { ?x schema:headline     ?y } .
+
+{ ?x rnews:description   ?y } => { ?x schema:description  ?y } .
+{ ?x dcterms:description ?y } => { ?x schema:description  ?y } .
+
+{ ?x rnews:thumbnailUrl  ?y } => { ?x schema:thumbnailUrl ?y } .
+
+{ ?x og:url              ?y } => { ?x schema:url          ?y } .
+{ ?x og2:url             ?y } => { ?x schema:url          ?y } .
+
+{ ?page foaf:primaryTopic ?topic . ?page schema:headline ?title } => { ?topic schema:headline ?title } .
