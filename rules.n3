@@ -5,17 +5,36 @@
 @prefix dcterms: <http://purl.org/dc/terms/> .
 @prefix po: <http://purl.org/ontology/po/> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix md: <http://www.w3.org/ns/md#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix bbcsearch: <http://www.bbc.co.uk/search/schema/> .
+
+{ ?x rnews:headline      ?y } => { ?x bbcsearch:title     ?y } .
+{ ?x og:title            ?y } => { ?x bbcsearch:title     ?y } .
+{ ?x schema:name         ?y } => { ?x bbcsearch:title     ?y } .
+
+{ ?x rnews:description   ?y } => { ?x bbcsearch:synopsis  ?y } .
+{ ?x dcterms:description ?y } => { ?x bbcsearch:synopsis  ?y } .
+{ ?x schema:description  ?y } => { ?x bbcsearch:synopsis  ?y } .
 
 
-{ ?x rnews:headline      ?y } => { ?x schema:headline     ?y } .
-{ ?x og:title            ?y } => { ?x schema:headline     ?y } .
+{ ?x rnews:thumbnailUrl  ?y } => { ?x bbcsearch:thumbnail ?y } .
+{ ?x schema:thumbnailUrl ?y } => { ?x bbcsearch:thumbnail ?y } .
+{ ?x schema:image        ?y } => { ?x bbcsearch:thumbnail ?y } .
 
-{ ?x rnews:description   ?y } => { ?x schema:description  ?y } .
-{ ?x dcterms:description ?y } => { ?x schema:description  ?y } .
+{ ?x og:url              ?y } => { ?x bbcsearch:url       ?y } .
+{ ?x og2:url             ?y } => { ?x bbcsearch:url       ?y } .
+{ ?x schema:url          ?y } => { ?x bbcsearch:url       ?y } .
 
-{ ?x rnews:thumbnailUrl  ?y } => { ?x schema:thumbnailUrl ?y } .
+{ ?x md:item ?list . ?list rdf:first ?first . ?first schema:description ?y } => { ?x bbcsearch:synopsis ?y } .
+{ ?x md:item ?list . ?list rdf:first ?first . ?first schema:name ?y } => { ?x bbcsearch:title ?y } .
 
-{ ?x og:url              ?y } => { ?x schema:url          ?y } .
-{ ?x og2:url             ?y } => { ?x schema:url          ?y } .
-
-{ ?page foaf:primaryTopic ?topic . ?page schema:headline ?title } => { ?topic schema:headline ?title } .
+{
+  ?page a schema:Series .
+  ?page foaf:primaryTopic ?brand .
+  ?brand po:episode ?episode .
+  ?page2 foaf:primaryTopic ?episode .
+  ?page2 schema:publication ?pub .
+  ?pub a schema:BroadcastEvent .
+  ?pub schema:startDate ?start
+} => { ?page bbcsearch:nextOn ?start } .
