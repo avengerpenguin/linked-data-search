@@ -56,7 +56,7 @@ def notify(uri):
     g.add((URIRef(uri), RDF.type, URIRef('http://www.bbc.co.uk/search/schema/ContentItem')))
     g.parse(uri)
 
-    return g.serialize(format='nt')
+    return g.serialize(format='nt').decode('utf-8')
 
 
 enrichers = [programmes_rdf]
@@ -65,7 +65,7 @@ enrichers = [programmes_rdf]
 @celery.task(queue='enrich')
 def enrich(ntriples):
     graph = Graph()
-    graph.parse(ntriples, format='nt')
+    graph.parse(data=ntriples, format='nt')
     for enricher in enrichers:
         try:
             enricher.enrich(graph)
@@ -73,13 +73,13 @@ def enrich(ntriples):
             # Allow things to fail and we will pass through unenriched (for now)
             continue
 
-    return graph.serialize(format='nt')
+    return graph.serialize(format='nt').decode('utf-8')
 
 
 @celery.task(queue='infer')
 def infer(ntriples):
     graph = Graph()
-    graph.parse(ntriples, format='nt')
+    graph.parse(data=ntriples, format='nt')
     rule_store, rule_graph, network = SetupRuleStore(makeNetwork=True)
     rules = HornFromN3(os.path.join(
         os.path.dirname(os.path.realpath(__file__)), 'rules.n3'))
@@ -93,13 +93,13 @@ def infer(ntriples):
 
     new_graph = closure_delta
 
-    return new_graph.serialize(format='nt')
+    return new_graph.serialize(format='nt').decode('utf-8')
 
 
 @celery.task(queue='ingest')
 def ingest(ntriples):
     graph = Graph()
-    graph.parse(ntriples, format='nt')
+    graph.parse(data=ntriples, format='nt')
     body = {
         'jsonld': jsonld.compact(
             json.loads(graph.serialize(format='json-ld').decode('utf-8')),
