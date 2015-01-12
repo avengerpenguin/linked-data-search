@@ -56,14 +56,16 @@ def notify(uri):
     g.add((URIRef(uri), RDF.type, URIRef('http://www.bbc.co.uk/search/schema/ContentItem')))
     g.parse(uri)
 
-    return g
+    return g.serialize(format='nt')
 
 
 enrichers = [programmes_rdf]
 
 
 @celery.task(queue='enrich')
-def enrich(graph):
+def enrich(ntriples):
+    graph = Graph()
+    graph.parse(ntriples, format='nt')
     for enricher in enrichers:
         try:
             enricher.enrich(graph)
@@ -71,11 +73,13 @@ def enrich(graph):
             # Allow things to fail and we will pass through unenriched (for now)
             continue
 
-    return graph
+    return graph.serialize(format='nt')
 
 
 @celery.task(queue='infer')
-def infer(graph):
+def infer(ntriples):
+    graph = Graph()
+    graph.parse(ntriples, format='nt')
     rule_store, rule_graph, network = SetupRuleStore(makeNetwork=True)
     rules = HornFromN3(os.path.join(
         os.path.dirname(os.path.realpath(__file__)), 'rules.n3'))
@@ -87,13 +91,15 @@ def infer(graph):
 
     network.feedFactsToAdd(generateTokenSet(graph))
 
-    new_graph = graph + closure_delta
+    new_graph = closure_delta
 
-    return new_graph
+    return new_graph.serialize(format='nt')
 
 
 @celery.task(queue='ingest')
-def ingest(graph):
+def ingest(ntriples):
+    graph = Graph()
+    graph.parse(ntriples, format='nt')
     body = {'jsonld': jsonld.expand(json.loads(graph.serialize(format='json-ld').decode('utf-8')))}
 
     for uri in graph.subjects(predicate=RDF.type, object=URIRef('http://www.bbc.co.uk/search/schema/ContentItem')):
