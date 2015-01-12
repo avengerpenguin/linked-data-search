@@ -100,7 +100,12 @@ def infer(ntriples):
 def ingest(ntriples):
     graph = Graph()
     graph.parse(ntriples, format='nt')
-    body = {'jsonld': jsonld.expand(json.loads(graph.serialize(format='json-ld').decode('utf-8')))}
+    body = {
+        'jsonld': jsonld.compact(
+            json.loads(graph.serialize(format='json-ld').decode('utf-8')),
+            {'@vocab': 'http://www.bbc.co.uk/search/schema/'}
+        )
+    }
 
     for uri in graph.subjects(predicate=RDF.type, object=URIRef('http://www.bbc.co.uk/search/schema/ContentItem')):
         es.index(index='bbc', body=body, doc_type='item', id=str(uri))
