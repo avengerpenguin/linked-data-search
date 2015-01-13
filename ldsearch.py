@@ -91,7 +91,7 @@ def infer(ntriples):
 
     network.feedFactsToAdd(generateTokenSet(graph))
 
-    new_graph = closure_delta
+    new_graph = graph + closure_delta
 
     return new_graph.serialize(format='nt').decode('utf-8')
 
