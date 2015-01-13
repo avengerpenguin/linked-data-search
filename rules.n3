@@ -11,12 +11,10 @@
 
 { ?x rnews:headline      ?y } => { ?x bbcsearch:title     ?y } .
 { ?x og:title            ?y } => { ?x bbcsearch:title     ?y } .
-{ ?x schema:name         ?y } => { ?x bbcsearch:title     ?y } .
 
 { ?x rnews:description   ?y } => { ?x bbcsearch:synopsis  ?y } .
 { ?x dcterms:description ?y } => { ?x bbcsearch:synopsis  ?y } .
 { ?x schema:description  ?y } => { ?x bbcsearch:synopsis  ?y } .
-
 
 { ?x rnews:thumbnailUrl  ?y } => { ?x bbcsearch:thumbnail ?y } .
 { ?x schema:thumbnailUrl ?y } => { ?x bbcsearch:thumbnail ?y } .
@@ -38,3 +36,6 @@
   ?pub a schema:BroadcastEvent .
   ?pub schema:startDate ?start
 } => { ?page bbcsearch:nextOn ?start } .
+
+{ ?programme schema:partOfSeries ?brand . ?brand bbc:search:title ?title } => {?programme bbcsearch:containerTitle ?title}
+
