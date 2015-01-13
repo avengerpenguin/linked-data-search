@@ -101,9 +101,8 @@ def ingest(ntriples):
     graph = Graph()
     graph.parse(data=ntriples, format='nt')
     body = {
-        'jsonld': jsonld.compact(
-            json.loads(graph.serialize(format='json-ld').decode('utf-8')),
-            {'@vocab': 'http://www.bbc.co.uk/search/schema/'}
+        'jsonld': jsonld.expand(
+            json.loads(graph.serialize(format='json-ld').decode('utf-8'))
         )
     }
 
