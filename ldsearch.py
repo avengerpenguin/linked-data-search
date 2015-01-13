@@ -59,7 +59,7 @@ def notify(uri):
     return g.serialize(format='nt').decode('utf-8')
 
 
-enrichers = [programmes_rdf]
+enrichers = [programmes_rdf, dbpedia_spotlight]
 
 
 @celery.task(queue='enrich')
