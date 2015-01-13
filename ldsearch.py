@@ -106,7 +106,18 @@ def ingest(ntriples):
         )
     }
 
+    mandatory_props = [
+        URIRef('http://www.bbc.co.uk/search/schema/title'),
+        URIRef('http://www.bbc.co.uk/search/schema/url')
+    ]
+
     for uri in graph.subjects(predicate=RDF.type, object=URIRef('http://www.bbc.co.uk/search/schema/ContentItem')):
+
+        for prop in mandatory_props:
+            if not (uri, prop) in graph.subject_predicates():
+                raise Exception(
+                    'Item {} missing mandatory field {}'.format(str(uri), str(prop)))
+
         es.index(index='bbc', body=body, doc_type='item', id=str(uri))
 
 
