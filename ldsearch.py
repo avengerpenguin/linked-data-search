@@ -8,7 +8,7 @@ from flask import Flask, request
 from FuXi.Rete.RuleStore import SetupRuleStore
 from FuXi.Rete.Util import generateTokenSet
 from FuXi.Horn.HornRules import HornFromN3
-from rdflib import Graph
+from rdflib import Graph, Literal
 from celery import Celery
 from pyld import jsonld
 import json
@@ -54,6 +54,7 @@ def index():
 def notify(uri):
     g = Graph()
     g.add((URIRef(uri), RDF.type, URIRef('http://www.bbc.co.uk/search/schema/ContentItem')))
+    g.add((URIRef(uri), URIRef('http://www.bbc.co.uk/search/schema/url'), Literal(uri)))
     g.parse(uri)
 
     return g.serialize(format='nt').decode('utf-8')
