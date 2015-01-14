@@ -103,7 +103,12 @@ def ingest(ntriples):
     graph.parse(data=ntriples, format='nt')
     body = {
         'jsonld': jsonld.expand(
-            json.loads(graph.serialize(format='json-ld').decode('utf-8'))
+            json.loads(graph.serialize(format='json-ld').decode('utf-8')),
+            {
+                'expandContext': {
+                    '@vocab': 'http://www.bbc.co.uk/search/schema/'
+                }
+            }
         )
     }
 
@@ -112,7 +117,9 @@ def ingest(ntriples):
         URIRef('http://www.bbc.co.uk/search/schema/url')
     ]
 
-    for uri in graph.subjects(predicate=RDF.type, object=URIRef('http://www.bbc.co.uk/search/schema/ContentItem')):
+    for uri in graph.subjects(
+            predicate=RDF.type,
+            object=URIRef('http://www.bbc.co.uk/search/schema/ContentItem')):
 
         for prop in mandatory_props:
             if not (uri, prop) in graph.subject_predicates():
