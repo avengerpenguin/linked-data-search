@@ -13,6 +13,28 @@ enrichers = [programmes_rdf, dbpedia_spotlight]
 es = Elasticsearch(hosts=os.getenv('ELASTICSEARCH_HOST', 'localhost:9200'))
 
 
+def notify(uri):
+    g = Graph()
+    g.add((URIRef(uri), RDF.type, URIRef('http://www.bbc.co.uk/search/schema/ContentItem')))
+    g.add((URIRef(uri), URIRef('http://www.bbc.co.uk/search/schema/url'), Literal(uri)))
+    g.parse(uri)
+
+    return g.serialize(format='nt').decode('utf-8')
+
+
+def enrich(ntriples):
+    graph = Graph()
+    graph.parse(data=ntriples, format='nt')
+    for enricher in enrichers:
+        try:
+            enricher.enrich(graph)
+        except:
+            # Allow things to fail and we will pass through unenriched (for now)
+            continue
+
+    return graph.serialize(format='nt').decode('utf-8')
+
+
 def infer(ntriples):
     graph = Graph()
     graph.parse(data=ntriples, format='nt')
@@ -33,53 +55,24 @@ def infer(ntriples):
 
 
 def ingest(ntriples):
+
     graph = Graph()
     graph.parse(data=ntriples, format='nt')
-    body = {
-        'jsonld': jsonld.expand(
-            json.loads(graph.serialize(format='json-ld').decode('utf-8')),
-            {
-                'expandContext': {
-                    '@vocab': 'http://www.bbc.co.uk/search/schema/'
-                }
-            }
-        )
-    }
+
+    expanded = jsonld.expand(
+        json.loads(
+            graph.serialize(format='json-ld').decode('utf-8')))
 
     mandatory_props = [
-        URIRef('http://www.bbc.co.uk/search/schema/title'),
-        URIRef('http://www.bbc.co.uk/search/schema/url')
+        'http://www.bbc.co.uk/search/schema/title',
+        'http://www.bbc.co.uk/search/schema/url'
     ]
 
-    for uri in graph.subjects(
-            predicate=RDF.type,
-            object=URIRef('http://www.bbc.co.uk/search/schema/ContentItem')):
+    for json_object in expanded:
+        uri = json_object['@id']
 
         for prop in mandatory_props:
-            if not (uri, prop) in graph.subject_predicates():
-                raise Exception(
-                    'Item {} missing mandatory field {}'.format(str(uri), str(prop)))
+            if prop not in json_object:
+                continue
 
-        es.index(index='bbc', body=body, doc_type='item', id=str(uri))
-
-
-def enrich(ntriples):
-    graph = Graph()
-    graph.parse(data=ntriples, format='nt')
-    for enricher in enrichers:
-        try:
-            enricher.enrich(graph)
-        except:
-            # Allow things to fail and we will pass through unenriched (for now)
-            continue
-
-    return graph.serialize(format='nt').decode('utf-8')
-
-
-def notify(uri):
-    g = Graph()
-    g.add((URIRef(uri), RDF.type, URIRef('http://www.bbc.co.uk/search/schema/ContentItem')))
-    g.add((URIRef(uri), URIRef('http://www.bbc.co.uk/search/schema/url'), Literal(uri)))
-    g.parse(uri)
-
-    return g.serialize(format='nt').decode('utf-8')
+        es.index(index='bbc', body=jsonld.expand(json_object)[0], doc_type='item', id=uri)
