@@ -1,4 +1,6 @@
 import json
+import datetime
+from celery import Celery
 import os
 from FuXi.Horn.HornRules import HornFromN3
 from FuXi.Rete.RuleStore import SetupRuleStore
@@ -8,12 +10,32 @@ from rdflib import Graph, URIRef, RDF, Literal
 from elasticsearch import Elasticsearch
 from pyld import jsonld
 import logging
+import feedparser
+
+
+celery = Celery('ldsearch', broker=os.getenv('BROKER_URL', None))
+celery.conf.CELERY_TIMEZONE = 'Europe/London'
+celery.conf.CELERYBEAT_SCHEDULE = {
+    'fetch_news': {
+        'task': 'ldsearch.tasks.news_poll',
+        'schedule': datetime.timedelta(minutes=5),
+    },
+}
 
 
 enrichers = [programmes_rdf, dbpedia_spotlight]
 es = Elasticsearch(hosts=os.getenv('ELASTICSEARCH_HOST', 'localhost:9200'))
 
 
+@celery.task(queue='notify')
+def news_poll():
+    feed = feedparser.parse('http://feeds.bbci.co.uk/news/rss.xml')
+    for item in feed['entries']:
+        uri = item['id']
+        (notify.s(uri) | enrich.s() | infer.s() | ingest.s()).apply_async()
+
+
+@celery.task(queue='notify')
 def notify(uri):
     g = Graph()
     g.add((URIRef(uri), RDF.type, URIRef('http://www.bbc.co.uk/search/schema/ContentItem')))
@@ -23,6 +45,7 @@ def notify(uri):
     return g.serialize(format='nt').decode('utf-8')
 
 
+@celery.task(queue='enrich')
 def enrich(ntriples):
     graph = Graph()
     graph.parse(data=ntriples, format='nt')
@@ -36,6 +59,7 @@ def enrich(ntriples):
     return graph.serialize(format='nt').decode('utf-8')
 
 
+@celery.task(queue='infer')
 def infer(ntriples):
     graph = Graph()
     graph.parse(data=ntriples, format='nt')
@@ -55,6 +79,7 @@ def infer(ntriples):
     return new_graph.serialize(format='nt').decode('utf-8')
 
 
+@celery.task(queue='ingest')
 def ingest(ntriples):
 
     graph = Graph()
