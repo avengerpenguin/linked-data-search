@@ -7,6 +7,7 @@ from ldsearch.enrichers import programmes_rdf, dbpedia_spotlight
 from rdflib import Graph, URIRef, RDF, Literal
 from elasticsearch import Elasticsearch
 from pyld import jsonld
+import logging
 
 
 enrichers = [programmes_rdf, dbpedia_spotlight]
@@ -69,10 +70,15 @@ def ingest(ntriples):
     ]
 
     for json_object in expanded:
+
         uri = json_object['@id']
 
         for prop in mandatory_props:
             if prop not in json_object:
-                continue
+                logging.warning(
+                    "Not indexing %s due to missing property: %s", uri, prop)
 
-        es.index(index='bbc', body=jsonld.expand(json_object)[0], doc_type='item', id=uri)
+        es.index(index='bbc',
+                 body=jsonld.expand(json_object)[0],
+                 doc_type='item',
+                 id=uri)
