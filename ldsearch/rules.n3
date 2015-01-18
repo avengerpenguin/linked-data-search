@@ -19,7 +19,7 @@
 { ?x dcterms:description ?y } => { ?x bbcsearch:synopsis  ?y } .
 { ?x schema:description  ?y } => { ?x bbcsearch:synopsis  ?y } .
 { ?x og:description      ?y } => { ?x bbcsearch:synopsis  ?y } .
-( ?x md:item ?y . ?y schema:description ?z } => {?x bbcsearch:description ?z } .
+{ ?x md:item ?y . ?y schema:description ?z } => {?x bbcsearch:description ?z } .
 
 { ?x rnews:thumbnailUrl  ?y } => { ?x bbcsearch:thumbnail ?y } .
 { ?x schema:thumbnailUrl ?y } => { ?x bbcsearch:thumbnail ?y } .
