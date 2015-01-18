@@ -48,4 +48,5 @@
 
 { ?page foaf:primaryTopic ?programme . ?programme dc:title ?title } => {?page bbcsearch:title ?title} .
 
-{ ?page md:item ?item . ?item schema:author ?author } => { ?page bbcsearch:contributor ?author }
+{ ?page md:item ?item . ?item schema:author ?author } => { ?page bbcsearch:contributor ?author } .
+
