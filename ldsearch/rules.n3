@@ -17,6 +17,7 @@
 { ?x rnews:description   ?y } => { ?x bbcsearch:synopsis  ?y } .
 { ?x dcterms:description ?y } => { ?x bbcsearch:synopsis  ?y } .
 { ?x schema:description  ?y } => { ?x bbcsearch:synopsis  ?y } .
+{ ?x og:description      ?y } => { ?x bbcsearch:synopsis  ?y } .
 
 { ?x rnews:thumbnailUrl  ?y } => { ?x bbcsearch:thumbnail ?y } .
 { ?x schema:thumbnailUrl ?y } => { ?x bbcsearch:thumbnail ?y } .
