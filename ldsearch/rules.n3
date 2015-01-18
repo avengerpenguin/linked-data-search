@@ -12,17 +12,20 @@
 
 { ?x rnews:headline      ?y } => { ?x bbcsearch:title     ?y } .
 { ?x og:title            ?y } => { ?x bbcsearch:title     ?y } .
+( ?x md:item ?y . ?y schema:headline ?z } => {?x bbcsearch:title ?z } .
 { ?page foaf:primaryTopic ?programme . ?programme dc:title ?title } => {?page bbcsearch:title ?title} .
 
 { ?x rnews:description   ?y } => { ?x bbcsearch:synopsis  ?y } .
 { ?x dcterms:description ?y } => { ?x bbcsearch:synopsis  ?y } .
 { ?x schema:description  ?y } => { ?x bbcsearch:synopsis  ?y } .
 { ?x og:description      ?y } => { ?x bbcsearch:synopsis  ?y } .
+( ?x md:item ?y . ?y schema:description ?z } => {?x bbcsearch:description ?z } .
 
 { ?x rnews:thumbnailUrl  ?y } => { ?x bbcsearch:thumbnail ?y } .
 { ?x schema:thumbnailUrl ?y } => { ?x bbcsearch:thumbnail ?y } .
 { ?x schema:image        ?y } => { ?x bbcsearch:thumbnail ?y } .
 { ?x og:image            ?y } => { ?x bbcsearch:thumbnail ?y } .
+( ?x md:item ?y . ?y schema:image ?z } => {?x bbcsearch:thumbnail ?z } .
 
 { ?x og:url              ?y } => { ?x bbcsearch:url       ?y } .
 { ?x og2:url             ?y } => { ?x bbcsearch:url       ?y } .
@@ -44,3 +47,5 @@
 { ?programme schema:partOfSeries ?brand . ?brand bbcsearch:title ?title } => {?programme bbcsearch:containerTitle ?title} .
 
 { ?page foaf:primaryTopic ?programme . ?programme dc:title ?title } => {?page bbcsearch:title ?title} .
+
+{ ?page md:item ?item . ?item schema:author ?author } => { ?page bbcsearch:contributor ?author }

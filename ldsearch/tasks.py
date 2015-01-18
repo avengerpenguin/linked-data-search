@@ -98,12 +98,16 @@ def ingest(ntriples):
 
         uri = json_object['@id']
 
+        valid = True
+
         for prop in mandatory_props:
             if prop not in json_object:
                 logging.warning(
                     "Not indexing %s due to missing property: %s", uri, prop)
+                valid = False
 
-        es.index(index='bbc',
-                 body=jsonld.expand(json_object)[0],
-                 doc_type='item',
-                 id=uri)
+        if valid:
+            es.index(index='bbc',
+                     body=jsonld.expand(json_object)[0],
+                     doc_type='item',
+                     id=uri)
