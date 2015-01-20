@@ -6,11 +6,12 @@ from FuXi.Horn.HornRules import HornFromN3
 from FuXi.Rete.RuleStore import SetupRuleStore
 from FuXi.Rete.Util import generateTokenSet
 from ldsearch.enrichers import programmes_rdf, dbpedia_spotlight
-from rdflib import Graph, URIRef, RDF, Literal
+from rdflib import Graph, URIRef, RDF, Literal, Namespace
 from elasticsearch import Elasticsearch
 from pyld import jsonld
 import logging
 import feedparser
+import re
 
 
 celery = Celery('ldsearch', broker=os.getenv('BROKER_URL', None))
@@ -20,8 +21,13 @@ celery.conf.CELERYBEAT_SCHEDULE = {
         'task': 'ldsearch.tasks.news_poll',
         'schedule': datetime.timedelta(minutes=5),
     },
+    'programmes_crawl': {
+        'task': 'ldsearch.tasks.news_poll',
+        'schedule': datetime.timedelta(minutes=60),
+    },
 }
 
+SCHEMA = Namespace('http://schema.org/')
 
 enrichers = [programmes_rdf, dbpedia_spotlight]
 es = Elasticsearch(hosts=os.getenv('ELASTICSEARCH_HOST', 'localhost:9200'))
@@ -33,6 +39,30 @@ def news_poll():
     for item in feed['entries']:
         uri = item['id']
         (notify.s(uri) | enrich.s() | infer.s() | ingest.s()).apply_async()
+
+
+PROGRAMMES_REGEX = '^http://www.bbc.co.uk/programmes/[a-z0-9]+'
+
+def programmes_get(url):
+        g = Graph()
+        g.parse(url)
+
+        for uri in g.subjects():
+            if re.match(PROGRAMMES_REGEX, uri):
+                (notify.s(uri) | enrich.s() | infer.s() | ingest.s()).apply_async()
+
+        for next_link in g.objects(predicate=SCHEMA.next):
+            programmes_get(str(next_link))
+
+
+import string
+
+
+@celery.task(queue='notify')
+def programmes_crawl():
+    for letter in list(string.ascii_lowercase) + ['%40']:
+        url = 'http://www.bbc.co.uk/programmes/a-z/by/{}/current'.format(letter)
+        programmes_get(url)
 
 
 @celery.task(queue='notify')

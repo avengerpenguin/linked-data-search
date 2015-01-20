@@ -10,7 +10,6 @@ elasticsearch==1.3.0
 -e git+https://github.com/avengerpenguin/FuXi.git#egg=FuXi
 gunicorn==19.1.1
 requests==2.5.1
-eventlet==0.16.0
 redis==2.10.3
 mock==1.0.1
 pytest==2.6.4
