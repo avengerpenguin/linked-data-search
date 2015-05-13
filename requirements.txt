@@ -1,15 +1,15 @@
 Flask==0.10.1
-PyLD==0.6.7
+PyLD==0.6.8
 celery==3.1.18
 flower==0.8.2
-html5lib==0.9999
+html5lib==0.99999
 rdflib==4.2.0
 rdflib-jsonld==0.3
 pyspotlight==0.6.5.2
 elasticsearch==1.4.0
 -e git+https://github.com/avengerpenguin/FuXi.git#egg=FuXi
 gunicorn==19.3.0
-requests==2.6.2
+requests==2.7.0
 redis==2.10.3
 mock==1.0.1
 pytest==2.7.0
