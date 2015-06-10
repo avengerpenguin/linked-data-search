@@ -6,11 +6,11 @@ html5lib==0.99999
 rdflib==4.2.0
 rdflib-jsonld==0.3
 pyspotlight==0.6.5.2
-elasticsearch==1.4.0
+elasticsearch==1.6.0
 -e git+https://github.com/avengerpenguin/FuXi.git#egg=FuXi
 gunicorn==19.3.0
 requests==2.7.0
 redis==2.10.3
 mock==1.0.1
-pytest==2.7.0
+pytest==2.7.1
 feedparser==5.2.0
