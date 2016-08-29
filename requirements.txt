@@ -5,7 +5,7 @@ flower==0.9.1
 html5lib==0.999999999
 rdflib==4.2.1
 rdflib-jsonld==0.4.0
-pyspotlight==0.6.5.2
+pyspotlight==0.7.1
 elasticsearch==2.4.0
 -e git+https://github.com/avengerpenguin/FuXi.git#egg=FuXi
 gunicorn==19.6.0
