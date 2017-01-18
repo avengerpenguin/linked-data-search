@@ -9,7 +9,7 @@ pyspotlight==0.7.1
 elasticsearch==5.1.0
 -e git+https://github.com/avengerpenguin/FuXi.git#egg=FuXi
 gunicorn==19.6.0
-requests==2.12.4
+requests==2.12.5
 redis==2.10.5
 mock==2.0.0
 pytest==3.0.5
