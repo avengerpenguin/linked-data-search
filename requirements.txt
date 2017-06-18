@@ -1,7 +1,7 @@
 Flask==0.12.2
 PyLD==0.7.2
 celery==4.0.2
-flower==0.9.1
+flower==0.9.2
 html5lib==0.999999999
 rdflib==4.2.2
 rdflib-jsonld==0.4.0
