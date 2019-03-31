@@ -12,5 +12,5 @@ gunicorn==19.9.0
 requests==2.21.0
 redis==3.2.1
 mock==2.0.0
-pytest==4.3.1
+pytest==4.4.0
 feedparser==5.2.1
