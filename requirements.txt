@@ -8,7 +8,7 @@ rdflib-jsonld==0.4.0
 pyspotlight==0.7.2
 elasticsearch==7.0.5
 -e git+https://github.com/avengerpenguin/FuXi.git#egg=FuXi
-gunicorn==19.9.0
+gunicorn==20.0.0
 requests==2.22.0
 redis==3.3.11
 mock==3.0.5
