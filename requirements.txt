@@ -1,6 +1,6 @@
 Flask==1.1.1
 PyLD==1.0.5
-celery==4.4.0
+celery==4.4.1
 flower==0.9.3
 html5lib==1.0.1
 rdflib==4.2.2
