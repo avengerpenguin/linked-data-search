@@ -6,7 +6,7 @@ html5lib==1.0.1
 rdflib==4.2.2
 rdflib-jsonld==0.4.0
 pyspotlight==0.7.2
-elasticsearch==7.5.1
+elasticsearch==7.6.0
 -e git+https://github.com/avengerpenguin/FuXi.git#egg=FuXi
 gunicorn==20.0.4
 requests==2.23.0
