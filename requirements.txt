@@ -1,5 +1,5 @@
 Flask==1.1.2
-PyLD==1.0.5
+PyLD==2.0.0
 celery==4.4.2
 flower==0.9.4
 html5lib==1.0.1
