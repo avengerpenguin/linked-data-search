@@ -11,6 +11,6 @@ elasticsearch==7.10.1
 gunicorn==20.0.4
 requests==2.25.0
 redis==3.5.3
-mock==4.0.2
+mock==4.0.3
 pytest==6.1.2
 feedparser==6.0.2
