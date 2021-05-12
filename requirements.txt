@@ -1,4 +1,4 @@
-Flask==1.1.2
+Flask==2.0.0
 PyLD==2.0.3
 celery==5.0.5
 flower==0.9.7
