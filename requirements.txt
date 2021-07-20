@@ -3,7 +3,7 @@ PyLD==2.0.3
 celery==5.1.2
 flower==1.0.0
 html5lib==1.1
-rdflib==5.0.0
+rdflib==6.0.0
 rdflib-jsonld==0.5.0
 pyspotlight==0.7.2
 elasticsearch==7.13.3
